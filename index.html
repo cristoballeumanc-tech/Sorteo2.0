@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ruleta Sorteo Ganadoras - Quimey Pádel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg1: #ffe1f0;
+      --bg2: #fff4fb;
+      --card-bg: #ffffff;
+      --primary: #ff4f9a;
+      --primary-dark: #e33880;
+      --accent: #ffb6d9;
+      --text-main: #2b2b2b;
+      --text-muted: #777;
+      --radius: 18px;
+      --shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+      color: var(--text-main);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 520px;
+      width: 100%;
+      padding: 22px 20px 26px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #ffe0f0;
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    h2 {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+    }
+
+    @media (max-width: 580px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .wheel-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wheel {
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #ff9fc8 0deg 60deg,
+        #ffcce2 60deg 120deg,
+        #ff9fc8 120deg 180deg,
+        #ffcce2 180deg 240deg,
+        #ff9fc8 240deg 300deg,
+        #ffcce2 300deg 360deg
+      );
+      border: 8px solid #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 3s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .wheel::before {
+      content: "";
+      position: absolute;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid var(--primary);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.16);
+    }
+
+    .wheel-center-label {
+      position: absolute;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .pointer {
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 20px solid var(--primary-dark);
+      margin-top: 6px;
+    }
+
+    .current-name {
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      min-height: 26px;
+    }
+
+    .buttons {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      box-shadow: 0 6px 14px rgba(255,79,154,0.45);
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px) scale(.98);
+      box-shadow: 0 3px 9px rgba(255,79,154,0.4);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--primary-dark);
+      border: 1px solid var(--accent);
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .side-panel {
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .side-panel h3 {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .side-panel ul {
+      list-style: none;
+      margin-top: 4px;
+      padding-left: 0;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    .side-panel li {
+      margin-bottom: 3px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      margin-left: 4px;
+      border-radius: 999px;
+      background: #ffe7f4;
+      font-size: 11px;
+      color: var(--primary-dark);
+    }
+
+    .winners {
+      margin-top: 14px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .winners h3 {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .winners ol {
+      padding-left: 18px;
+    }
+
+    .winners li {
+      margin-bottom: 3px;
+    }
+
+    .place {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: #fff4c4;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    .info {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .confetti span {
+      position: absolute;
+      width: 6px;
+      height: 10px;
+      border-radius: 2px;
+      background: #ff9fc8;
+      animation: fall 1.4s linear forwards;
+      opacity: 0;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(260px) rotate(340deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="confetti" id="confetti"></div>
+
+    <div class="badge">
+      🔔 Sorteo oficial · Ganadoras
+    </div>
+    <h1>Ruleta – Quimey Pádel</h1>
+    <h2>Definición aleatoria de las ganadoras (con doble oportunidad)</h2>
+
+    <div class="layout">
+      <div class="wheel-wrapper">
+        <div class="pointer"></div>
+        <div class="wheel" id="wheel">
+          <div class="wheel-center-label">QUIMEY</div>
+        </div>
+        <div class="current-name" id="currentName">Haz clic en “Sortear” 🎀</div>
+
+        <div class="buttons">
+          <button class="btn btn-primary" id="spinBtn">🎁 Sortear ganadora</button>
+          <button class="btn btn-secondary" id="resetBtn">Reiniciar</button>
+        </div>
+      </div>
+
+      <div class="side-panel">
+        <h3>Participantes (IG):</h3>
+        <ul id="participantList"></ul>
+        <div class="winners">
+          <h3>Ganadoras:</h3>
+          <ol id="winnerList"></ol>
+        </div>
+      </div>
+    </div>
+
+    <p class="info">
+      <strong>Catalinaamoor_</strong> y <strong>Paaupage</strong> tienen doble oportunidad en la ruleta.
+    </p>
+  </div>
+
+  <script>
+    // Lista final de participantes
+    const participants = [
+      { name: "Catalinaamoor_", tickets: 2 }, // doble chance
+      { name: "Paaupage", tickets: 2 },      // doble chance
+      { name: "_.paito", tickets: 1 },
+      { name: "Yas_nicoleee", tickets: 1 },
+      { name: "Naditalaskarin", tickets: 1 },
+      { name: "Mile_domi", tickets: 1 }
+    ];
+
+    // Número de ganadoras
+    const winnersNeeded = 4;
+
+    const spinBtn = document.getElementById("spinBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const wheel = document.getElementById("wheel");
+    const currentName = document.getElementById("currentName");
+    const winnerList = document.getElementById("winnerList");
+    const participantList = document.getElementById("participantList");
+    const confettiContainer = document.getElementById("confetti");
+
+    let winners = [];
+    let spinning = false;
+    let rotation = 0;
+
+    function renderParticipants() {
+      participantList.innerHTML = "";
+      participants.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p.name;
+        if (p.tickets && p.tickets > 1) {
+          const tag = document.createElement("span");
+          tag.className = "tag";
+          tag.textContent = "doble chance";
+          li.appendChild(tag);
+        }
+        participantList.appendChild(li);
+      });
+    }
+
+    function buildPool() {
+      const pool = [];
+      participants.forEach(p => {
+        if (!winners.includes(p.name)) {
+          const t = p.tickets && p.tickets > 0 ? p.tickets : 1;
+          for (let i = 0; i < t; i++) {
+            pool.push(p.name);
+          }
+        }
+      });
+      return pool;
+    }
+
+    function randomFromPool(pool) {
+      if (!pool.length) return null;
+      const index = Math.floor(Math.random() * pool.length);
+      return pool[index];
+    }
+
+    function spinWheelToRandom(name) {
+      const turns = 5 + Math.random() * 2;
+      rotation += 360 * turns;
+      wheel.style.transform = "rotate(" + rotation + "deg)";
+
+      setTimeout(() => {
+        currentName.textContent = name;
+        addWinner(name);
+        makeConfetti();
+        spinning = false;
+        updateButtons();
+      }, 3000);
+    }
+
+    function addWinner(name) {
+      winners.push(name);
+      renderWinners();
+    }
+
+    function renderWinners() {
+      winnerList.innerHTML = "";
+      winners.forEach((w, i) => {
+        const li = document.createElement("li");
+        li.textContent = w;
+
+        if (i === 0) {
+          const span = document.createElement("span");
+          span.className = "place";
+          span.textContent = "1er lugar";
+          li.appendChild(span);
+        } else if (i === 1) {
+          const span = document.createElement("span");
+          span.className = "place";
+          span.textContent = "2do lugar";
+          li.appendChild(span);
+        } else if (i === 2) {
+          const span = document.createElement("span");
+          span.className = "place";
+          span.textContent = "3er lugar";
+          li.appendChild(span);
+        }
+
+        winnerList.appendChild(li);
+      });
+    }
+
+    function makeConfetti() {
+      confettiContainer.innerHTML = "";
+      const pieces = 40;
+      for (let i = 0; i < pieces; i++) {
+        const c = document.createElement("span");
+        c.style.left = Math.random() * 100 + "%";
+        c.style.background = i % 2 === 0 ? "#ff9fc8" : "#ffd1ea";
+        c.style.animationDelay = (Math.random() * 0.25) + "s";
+        confettiContainer.appendChild(c);
+        setTimeout(() => c.remove(), 1500);
+      }
+    }
+
+    function updateButtons() {
+      const pool = buildPool();
+      const canDraw = winners.length < winnersNeeded && pool.length > 0;
+      spinBtn.disabled = spinning || !canDraw;
+    }
+
+    spinBtn.addEventListener("click", () => {
+      if (spinning) return;
+      const pool = buildPool();
+      if (!pool.length || winners.length >= winnersNeeded) {
+        updateButtons();
+        return;
+      }
+      spinning = true;
+      updateButtons();
+      currentName.textContent = "Sorteando...";
+      const selected = randomFromPool(pool);
+      spinWheelToRandom(selected);
+    });
+
+    resetBtn.addEventListener("click", () => {
+      winners = [];
+      spinning = false;
+      rotation = 0;
+      wheel.style.transform = "rotate(0deg)";
+      currentName.textContent = "Haz clic en “Sortear” 🎀";
+      winnerList.innerHTML = "";
+      confettiContainer.innerHTML = "";
+      updateButtons();
+    });
+
+    // Inicializar
+    renderParticipants();
+    updateButtons();
+  </script>
+</body>
+</html>
